@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional
 
-def parse_args() -> tuple[str, Optional[str]]:
+def parse_args() -> tuple[Path, Optional[str]]:
     parser = ArgumentParser(description = __doc__)
     parser.add_argument("day", type = Path, metavar = "DAY",
         help = "path of directory to create by copying day00/"
@@ -22,7 +22,7 @@ def parse_args() -> tuple[str, Optional[str]]:
     cookie = args.file.read_bytes() if args.file is not None else args.raw
     return args.day, cookie
 
-def main(daystr: str, cookie: Optional[str] = None) -> None:
+def main(day: Path, cookie: Optional[str] = None) -> None:
     raise NotImplementedError
 
 if __name__ == "__main__":
