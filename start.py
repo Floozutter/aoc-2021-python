@@ -3,6 +3,7 @@ starts an Advent of Code 2021 day by copying from a template and requesting the 
 """
 
 from argparse import ArgumentParser
+from shutil import copytree
 from pathlib import Path
 from typing import Optional
 
@@ -53,7 +54,7 @@ def main(
 ) -> None:
     # copy the directory tree from template to day
     print(f"copying from {template}/ to {day}/...", end = " ")
-    raise NotImplementedError
+    copytree(template, day)
     print("done.")
     # write blank inputfile and exit if no cookie provided
     if cookie is None:
