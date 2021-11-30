@@ -2,8 +2,8 @@
 starts an Advent of Code 2021 day by copying from a template and requesting the input
 """
 
-from argparse import ArgumentParser
-from shutil import copytree
+import argparse
+import shutil
 from pathlib import Path
 from typing import Optional
 
@@ -14,7 +14,7 @@ def parse_day_number(day: Path) -> Optional[int]:
     raise NotImplementedError
 
 def parse_args() -> tuple[Path, Path, Path, Optional[str]]:
-    parser = ArgumentParser(description = __doc__)
+    parser = argparse.ArgumentParser(description = __doc__)
     parser.add_argument("day", type = Path,
         metavar = "DAY",
         help = "path of directory to create by copying from the template",
@@ -53,32 +53,37 @@ def main(
     cookie: Optional[str] = None
 ) -> None:
     # copy the directory tree from template to day
-    print(f"copying from {template}/ to {day}/...", end = " ")
-    copytree(template, day)
-    print("done.")
+    print(f"copying from {template}/ to {day}/...", end = "")
+    try:
+        shutil.copytree(template, day)
+    except Exception as err:
+        print("!")
+        print(f"error: {err}")
+        return
+    print(" done.")
     # write blank inputfile and exit if no cookie provided
     if cookie is None:
         print("no session cookie provided to request input with!")
-        print(f"writing blank {inputfile}...", end = " ")
+        print(f"writing blank {inputfile}...", end = "")
         raise NotImplementedError
-        print("done.")
+        print(" done.")
         return
     print("session cookie provided to request input.")
     # parse day number from day path
-    print(f"parsing day number from {day}/...", end = " ")
+    print(f"parsing day number from {day}/...", end = "")
     day_number = parse_day_number(str(day))
     if day_number is None:
         print(f"error: could not parse day number from {day}!")
         return
-    print(f"parsed as day {day_number}.")
+    print(f" parsed as day {day_number}.")
     # request input for the parsed day number using cookie
-    print(f"requesting input for day {day_number} using cookie...", end = " ")
+    print(f"requesting input for day {day_number} using cookie...", end = "")
     raise NotImplementedError
-    print("done.")
+    print(" done.")
     # write input to inputfile
-    print(f"writing input to {inputfile}...", end = " ")
+    print(f"writing input to {inputfile}...", end = "")
     raise NotImplementedError
-    print("done.")
+    print(" done.")
 
 if __name__ == "__main__":
     main(*parse_args())
