@@ -35,20 +35,20 @@ def parse_args() -> tuple[Path, Path, Path, Optional[str]]:
         metavar = "DAY",
         help = "path of directory to create by copying from the template",
     )
-    parser.add_argument("--template", type = Path, default = DEFAULT_TEMPLATE,
+    parser.add_argument("-t", "--template", type = Path, default = DEFAULT_TEMPLATE,
         metavar = "TEMPLATE",
         help = f"path of template for DAY, defaults to {DEFAULT_TEMPLATE}/",
     )
-    parser.add_argument("--inputfile", type = Path, default = DEFAULT_INPUTFILE,
+    parser.add_argument("-i", "--inputfile", type = Path, default = DEFAULT_INPUTFILE,
         metavar = "INPUTFILE",
         help = f"path relative from TEMPLATE to write the requested input to",
     )
     cookie_group = parser.add_mutually_exclusive_group()
-    cookie_group.add_argument("--raw", type = str,
+    cookie_group.add_argument("-r", "--rawcookie", type = str,
         metavar = "COOKIE",
         help = "Advent of Code session cookie to request DAY's input with",
     )
-    cookie_group.add_argument("--file", type = Path,
+    cookie_group.add_argument("-f", "--filecookie", type = Path,
         metavar = "COOKIE",
         help = "path to file containing Advent of Code session cookie",
     )
