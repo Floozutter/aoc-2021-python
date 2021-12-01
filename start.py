@@ -57,16 +57,19 @@ def main(
     try:
         shutil.copytree(template, day)
     except (shutil.Error, OSError) as err:
-        print("!")
-        print(f"error: {err}")
+        print(f"!\nerror: {err}")
         return
     print(" done.")
     # write blank inputfile and exit if no cookie provided
     if cookie is None:
         print("no session cookie provided to request input with!")
         print(f"writing blank {inputfile}...", end = "")
-        inputfile.touch()
-        print(" done.")
+        try:
+            inputfile.touch()
+        except OSError as err:
+            print(f"!\nerror: {err}")
+        else:
+            print(" done.")
         return
     print("session cookie provided to request input.")
     # parse day number from day path
