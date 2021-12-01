@@ -11,6 +11,14 @@ from typing import Optional
 DEFAULT_TEMPLATE = Path("day00/")
 DEFAULT_INPUTFILE = Path("input.txt")
 
+def request_aoc2021_input(day: int, cookie: str) -> str:
+    import requests
+    response = requests.get(
+        f"https://adventofcode.com/2020/day/{day}/input",
+        cookies = {"session": cookie},
+    )
+    return response.text
+
 _PARSE_DAY_NUMBER_PATTERN = re.compile("[0-9]+")
 def parse_day_number(day: str) -> int:
     matches = _PARSE_DAY_NUMBER_PATTERN.findall(day)
@@ -46,7 +54,7 @@ def parse_args() -> tuple[Path, Path, Path, Optional[str]]:
     )
     args = parser.parse_args()
     joined_inputfile = args.template / args.inputfile
-    cookie = args.file.read_bytes() if args.file is not None else args.raw
+    cookie = args.file.read_text().strip() if args.file is not None else args.raw
     return (
         args.day,
         args.template,
@@ -90,7 +98,11 @@ def main(
     print(f" parsed as day {day_number}.")
     # request input for the parsed day number using cookie
     print(f"requesting input for day {day_number} using cookie...", end = "")
-    raise NotImplementedError
+    try:
+        inputtext = request_aoc2021_input(day_number, cookie)
+    except ImportError as err:
+        print(f"!\nerror: {err.name} not installed")
+        return
     print(" done.")
     # write input to inputfile
     print(f"writing input to {inputfile}...", end = "")
