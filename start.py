@@ -65,7 +65,7 @@ def main(
     if cookie is None:
         print("no session cookie provided to request input with!")
         print(f"writing blank {inputfile}...", end = "")
-        raise NotImplementedError
+        inputfile.touch()
         print(" done.")
         return
     print("session cookie provided to request input.")
