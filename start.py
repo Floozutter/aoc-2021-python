@@ -14,7 +14,7 @@ DEFAULT_INPUTFILE = Path("input.txt")
 def request_aoc2021_input(day: int, cookie: str) -> str:
     import requests
     response = requests.get(
-        f"https://adventofcode.com/2020/day/{day}/input",
+        f"https://adventofcode.com/2021/day/{day}/input",
         cookies = {"session": cookie},
     )
     return response.text
@@ -53,7 +53,7 @@ def parse_args() -> tuple[Path, Path, Path, Optional[str]]:
         help = "path to file containing Advent of Code session cookie",
     )
     args = parser.parse_args()
-    joined_inputfile = args.template / args.inputfile
+    joined_inputfile = args.day / args.inputfile
     cookie = args.file.read_text().strip() if args.file is not None else args.raw
     return (
         args.day,
@@ -84,8 +84,8 @@ def main(
             inputfile.touch()
         except OSError as err:
             print(f"!\nerror: {err}")
-        else:
-            print(" done.")
+            return
+        print(" done.")
         return
     print("session cookie provided to request input.")
     # parse day number from day path
@@ -106,8 +106,13 @@ def main(
     print(" done.")
     # write input to inputfile
     print(f"writing input to {inputfile}...", end = "")
-    raise NotImplementedError
+    try:
+        inputfile.write_text(inputtext)
+    except OSError as err:
+        print(f"!\nerror: {err}")
+        return
     print(" done.")
+    return
 
 if __name__ == "__main__":
     main(*parse_args())
