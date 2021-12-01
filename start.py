@@ -56,7 +56,7 @@ def main(
     print(f"copying from {template}/ to {day}/...", end = "")
     try:
         shutil.copytree(template, day)
-    except shutil.Error as err:
+    except (shutil.Error, OSError) as err:
         print("!")
         print(f"error: {err}")
         return
