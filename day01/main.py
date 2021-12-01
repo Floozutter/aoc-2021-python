@@ -2,17 +2,14 @@ INPUTPATH = "input.txt"
 #INPUTPATH = "input-test.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
-data = tuple(map(int, raw.strip().split()))
+depths = tuple(map(int, raw.strip().split()))
 
-count = 0
-for i in range(len(data) - 1):
-    if data[i] < data[i+1]:
-        count += 1
-print(count)
+print(sum(
+    1 for last, curr in zip(depths, depths[1:])
+    if last < curr
+))
 
-count2 = 0
-for i in range(len(data) - 3):
-    left, right = data[i:i+3], data[i+1:i+4]
-    if sum(left) < sum(right):
-        count2 += 1
-print(count2)
+print(sum(
+    1 for a, b, c, d in zip(*map(lambda i: depths[i:], range(4)))
+    if a+b+c < b+c+d
+))
