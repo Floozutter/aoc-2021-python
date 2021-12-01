@@ -4,14 +4,22 @@ starts an Advent of Code 2021 day by copying from a template and requesting the 
 
 import argparse
 import shutil
+import re
 from pathlib import Path
 from typing import Optional
 
 DEFAULT_TEMPLATE = Path("day00/")
 DEFAULT_INPUTFILE = Path("input.txt")
 
-def parse_day_number(day: Path) -> Optional[int]:
-    raise NotImplementedError
+_PARSE_DAY_NUMBER_PATTERN = re.compile("[0-9]+")
+def parse_day_number(day: str) -> int:
+    matches = _PARSE_DAY_NUMBER_PATTERN.findall(day)
+    if not matches:
+        raise ValueError("no digit substring found")
+    elif len(matches) == 1:
+        return int(next(iter(matches)))
+    else:
+        raise ValueError("more than one digit substring found")
 
 def parse_args() -> tuple[Path, Path, Path, Optional[str]]:
     parser = argparse.ArgumentParser(description = __doc__)
@@ -74,9 +82,10 @@ def main(
     print("session cookie provided to request input.")
     # parse day number from day path
     print(f"parsing day number from {day}/...", end = "")
-    day_number = parse_day_number(str(day))
-    if day_number is None:
-        print(f"error: could not parse day number from {day}!")
+    try:
+        day_number = parse_day_number(day.name)
+    except ValueError as err:
+        print(f"!\nerror: {err}")
         return
     print(f" parsed as day {day_number}.")
     # request input for the parsed day number using cookie
