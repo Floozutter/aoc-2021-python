@@ -69,7 +69,7 @@ def main(
     cookie: Optional[str] = None
 ) -> None:
     # copy the directory tree from template to day
-    print(f"copying from {template}/ to {day}/...", end = "")
+    print(f"copying from {template} to {day}...", end = "")
     try:
         shutil.copytree(template, day)
     except (shutil.Error, OSError) as err:
@@ -89,7 +89,7 @@ def main(
         return
     print("session cookie provided to request input.")
     # parse day number from day path
-    print(f"parsing day number from {day}/...", end = "")
+    print(f"parsing day number from {day}...", end = "")
     try:
         day_number = parse_day_number(day.name)
     except ValueError as err:
