@@ -44,7 +44,7 @@ def parse_args() -> tuple[Path, Path, Path, Optional[str]]:
         help = f"path relative from TEMPLATE to write the requested input to",
     )
     cookie_group = parser.add_mutually_exclusive_group()
-    cookie_group.add_argument("-r", "--rawcookie", type = str,
+    cookie_group.add_argument("-r", "--rawcookie", type = str, default = None,
         metavar = "COOKIE",
         help = "Advent of Code session cookie to request DAY's input with",
     )
@@ -54,7 +54,10 @@ def parse_args() -> tuple[Path, Path, Path, Optional[str]]:
     )
     args = parser.parse_args()
     joined_inputfile = args.day / args.inputfile
-    cookie = args.file.read_text().strip() if args.file is not None else args.raw
+    if args.filecookie is not None:
+        cookie = args.filecookie.read_text().strip()
+    else:
+        cookie = args.rawcookie
     return (
         args.day,
         args.template,
@@ -68,18 +71,21 @@ def main(
     inputfile: Path,
     cookie: Optional[str] = None
 ) -> None:
-    # copy the directory tree from template to day
-    print(f"copying from {template} to {day}...", end = "")
-    try:
-        shutil.copytree(template, day)
-    except (shutil.Error, OSError) as err:
-        print(f"!\nerror: {err}")
-        return
-    print(" done.")
+    # copy the directory tree from template to day unless day already exists
+    if day.is_dir():
+        print(f"skipped copying because {day} already exists!")
+    else:
+        print(f"copying from {template} to {day}...", end = "")
+        try:
+            shutil.copytree(template, day)
+        except (shutil.Error, OSError) as err:
+            print(f"!\nerror: {err}")
+            return
+        print(" done.")
     # write blank inputfile and exit if no cookie provided
     if cookie is None:
         print("no session cookie provided to request input with!")
-        print(f"writing blank {inputfile}...", end = "")
+        print(f"only touching {inputfile}...", end = "")
         try:
             inputfile.touch()
         except OSError as err:
