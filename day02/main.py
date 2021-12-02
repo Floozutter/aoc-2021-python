@@ -17,6 +17,8 @@ for word, n in commands:
             d += n
         case "up":
             d -= n
+        case _:
+            raise AssertionError
 print(h * d)
 
 h = d = aim = 0
@@ -29,4 +31,6 @@ for word, n in commands:
             aim += n
         case "up":
             aim -= n
+        case _:
+            raise AssertionError
 print(h * d)
