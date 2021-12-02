@@ -3,25 +3,30 @@ INPUTPATH = "input.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
 
-h, d = 0, 0
-for word, num in (s.split() for s in raw.strip().split("\n")):
-    n = int(num)
-    if word == "forward":
-        h += n
-    elif word == "down":
-        d += n
-    elif word == "up":
-        d -= n
+def parse_command(line: str) -> tuple[str, int]:
+    word, n = line.split()
+    return word, int(n)
+commands = tuple(map(parse_command, raw.strip().split("\n")))
+
+h = d = 0
+for word, n in commands:
+    match word:
+        case "forward":
+            h += n
+        case "down":
+            d += n
+        case "up":
+            d -= n
 print(h * d)
 
-h, d, aim = 0, 0, 0
-for word, num in (s.split() for s in raw.strip().split("\n")):
-    n = int(num)
-    if word == "forward":
-        h += n
-        d += n * aim
-    elif word == "down":
-        aim += n
-    elif word == "up":
-        aim -= n
+h = d = aim = 0
+for word, n in commands:
+    match word:
+        case "forward":
+            h += n
+            d += n * aim
+        case "down":
+            aim += n
+        case "up":
+            aim -= n
 print(h * d)
