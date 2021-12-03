@@ -10,6 +10,7 @@ from typing import Optional
 
 DEFAULT_TEMPLATE = Path("day00/")
 DEFAULT_INPUTFILE = Path("input.txt")
+LINELIMIT = 8
 
 def request_aoc2021_input(day: int, cookie: str) -> str:
     import requests
@@ -110,6 +111,15 @@ def main(
         print(f"!\nerror: {err.name} not installed")
         return
     print(" done.")
+    # print excerpt of input to stdout
+    print(f"\nfirst {LINELIMIT} lines of input:")
+    for index, line in enumerate(inputtext.split("\n")):
+        if index < LINELIMIT:
+            print(line)
+        else:
+            print("...")
+            break
+    print()
     # write input to inputfile
     print(f"writing input to {inputfile}...", end = "")
     try:
