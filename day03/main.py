@@ -2,32 +2,15 @@ INPUTPATH = "input.txt"
 #INPUTPATH = "input-test.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
+report = tuple(raw.strip().split())
+columns = tuple(map(tuple, zip(*report)))
 
-data = tuple(raw.strip().split())
+from statistics import mode
+gamma_bits = "".join(mode(bits) for bits in columns)
+epsilon_bits = "".join("0" if b == "1" else "1" for b in gamma_bits)
+print(int(gamma_bits, 2) * int(epsilon_bits, 2))
 
-from collections import Counter
-
-zeros = Counter()
-ones = Counter()
-for bitstring in data:
-    for i, c in enumerate(bitstring):
-        if c == "0":
-            zeros[i] += 1
-        else:
-            ones[i] += 1
-gamma = []
-for i in range(len(data[0])):
-    if zeros[i] > ones[i]:
-        gamma.append("0")
-    else:
-        gamma.append("1")
-gamma = "".join(gamma)
-epsilon = "".join("0" if g == "1" else "1" for g in gamma)
-gamma = int(gamma, 2)
-epsilon = int(epsilon, 2)
-print(gamma*epsilon)
-
-numbers = set(data)
+numbers = set(report)
 i = 0
 while len(numbers) > 1:
     zeros = 0
@@ -40,7 +23,7 @@ while len(numbers) > 1:
             numbers.remove(n)
     i += 1
 o = int(next(iter(numbers)), 2)
-numbers = set(data)
+numbers = set(report)
 i = 0
 while len(numbers) > 1:
     zeros = 0
