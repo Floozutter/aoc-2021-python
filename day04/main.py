@@ -2,46 +2,39 @@ INPUTPATH = "input.txt"
 #INPUTPATH = "input-test.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
-header, *body = raw.strip().split("\n\n")
+header, *bodies = raw.strip().split("\n\n")
 
-draws = tuple(map(int, header.split(",")))
-
+from typing import NamedTuple, Iterable, Optional, cast
+class Win(NamedTuple):
+    turn: int
+    score: int
 class Board:
-    def __init__(self, s: str):
-        values = []
-        for row in s.strip().split("\n"):
-            values.append([int(n) for n in row.strip().split()])
-        self.rows = values
-    def won(self, numbers: set[int]) -> bool:
-        for r in self.rows:
-            if all(n in numbers for n in r):
-                return True
-        for c in tuple(map(tuple, zip(*self.rows))):
-            if all(n in numbers for n in c):
+    unmarked: set[int]
+    axes: tuple[set[int], ...]
+    def __init__(self, grid: Iterable[Iterable[int]]):
+        rows = tuple(tuple(row) for row in grid)
+        cols: tuple[tuple[int, ...], ...] = tuple(map(tuple, zip(*rows)))
+        self.axes = tuple(map(set, rows + cols))
+        self.unmarked = set(n for a in self.axes for n in a)
+    def mark(self, number: int) -> bool:
+        self.unmarked.discard(number)
+        for a in self.axes:
+            a.discard(number)
+            if not a:
                 return True
         return False
-    def unmarked(self, numbers: set[int]) -> int:
-        return sum(
-            sum(n for n in r if n not in numbers)
-            for r in self.rows
-        )
-boards = tuple(map(Board, body))
+    def play(self, draws: Iterable[int]) -> Optional[Win]:
+        for i, n in enumerate(draws):
+            if self.mark(n):
+                return Win(i + 1, sum(self.unmarked) * n)
+        return None
 
-def a():
-    for i in range(1, len(draws) + 1):
-        for b in boards:
-            if b.won(set(draws[:i])):
-                return b.unmarked(set(draws[:i])) * draws[i-1]
-print(a())
-
-def b(boards, draws, it):
-    if len(boards) <= 1:
-        last = boards[0]
-        for d in it:
-            draws.add(d)
-            if last.won(draws):
-                return last.unmarked(draws) * d
-    else:
-        draws.add(next(it))
-        return b(tuple(x for x in boards if not x.won(draws)), draws, it)
-print(b(boards, set(), iter(draws)))
+draws = tuple(map(int, header.split(",")))
+results = tuple(
+    Board(map(int, r.strip().split()) for r in body.strip().split("\n")).play(draws)
+    for body in bodies
+)
+assert all(isinstance(r, Win) for r in results)
+wins = cast(Iterable[Win], results)
+print(min(wins).score)
+print(max(wins).score)
