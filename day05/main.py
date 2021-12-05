@@ -4,13 +4,14 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 
 Point = tuple[int, ...]
-from typing import NamedTuple, Iterator
+from typing import NamedTuple
+from collections.abc import Iterator
 class Line(NamedTuple):
     start: Point
     end: Point
     def points(self) -> Iterator[Point]:
         diffs = tuple(b - a for a, b in zip(self.start, self.end))
-        steps = max(map(abs, diffs))
+        steps = max(abs(d) for d in diffs)
         strides = tuple(d // steps for d in diffs)
         return (
             Point(s*i + z for z, s in zip(self.start, strides))
@@ -30,7 +31,7 @@ lines = tuple(
 
 # create Point-to-count mapping
 from collections import Counter
-point_counts = Counter()
+point_counts: Counter[Point] = Counter()
 overlaps = lambda: sum(1 for count in point_counts.values() if count > 1)
 
 # count points in horizontal and vertical lines
