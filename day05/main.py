@@ -3,50 +3,42 @@ INPUTPATH = "input.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
 
-def parse_line(s: str):
-    l, r = s.split("->")
-    a, b = l.split(",")
-    c, d = r.split(",")
-    return tuple(map(int, (a, b, c, d)))
-lines = tuple(map(parse_line, raw.strip().split("\n")))
-only = tuple((a, b, c, d) for a, b, c, d in lines if a == c or b == d)
+Point = tuple[int, ...]
+from typing import NamedTuple, Iterator
+class Line(NamedTuple):
+    start: Point
+    end: Point
+    def points(self) -> Iterator[Point]:
+        diffs = tuple(b - a for a, b in zip(self.start, self.end))
+        steps = max(map(abs, diffs))
+        strides = tuple(d // steps for d in diffs)
+        return (
+            Point(s*i + z for z, s in zip(self.start, strides))
+            for i in range(steps + 1)
+        )
+    def axis_aligned(self) -> bool:
+        return sum(1 for a, b in zip(self.start, self.end) if a != b) == 1
 
+# parse raw text into Lines
+lines = tuple(
+    Line(*(
+        Point(map(int, point.split(",")))
+        for point in line.split("->")
+    ))
+    for line in raw.strip().split("\n")
+)
+
+# create Point-to-count mapping
 from collections import Counter
-counter = Counter()
-for a, b, c, d in only:
-    points = set()
-    q, w = sorted((a, c))
-    for x in range(q, w+1):
-        points.add((x, b))
-    e, r = sorted((b, d))
-    for y in range(e, r+1):
-        points.add((a, y))
-    for p in points:
-        counter[p] += 1
-print(sum(1 for count in counter.values() if count >= 2))
+point_counts = Counter()
+overlaps = lambda: sum(1 for count in point_counts.values() if count > 1)
 
-counter = Counter()
-for a, b, c, d in lines:
-    points = set()
-    if a == c or b == d:
-        q, w = sorted((a, c))
-        for x in range(q, w+1):
-            points.add((x, b))
-        e, r = sorted((b, d))
-        for y in range(e, r+1):
-            points.add((a, y))
-    else:
-        for i in range(abs(c - a) + 1):
-            x = a + i if c > a else a - i
-            y = b + i if d > b else b - i
-            points.add((x, y))
-    for p in points:
-        counter[p] += 1
-print(sum(1 for count in counter.values() if count >= 2))
+# count points in horizontal and vertical lines
+for points in (l.points() for l in lines if l.axis_aligned()):
+    point_counts.update(points)
+print(overlaps())
 
-"""
-for x in range(10):
-    for y in range(10):
-        print(counter[y, x], end="")
-    print("")
-"""
+# count points in diagonal lines
+for points in (l.points() for l in lines if not l.axis_aligned()):
+    point_counts.update(points)
+print(overlaps())
