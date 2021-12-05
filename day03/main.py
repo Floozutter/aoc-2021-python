@@ -4,13 +4,13 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 report = tuple(raw.strip().split())
 
-columns = tuple(map(tuple, zip(*report)))
+columns: tuple[tuple[str, ...], ...] = tuple(map(tuple, zip(*report)))
 from statistics import mode
 gamma_bits = "".join(mode(bits) for bits in columns)
 epsilon_bits = "".join("0" if b == "1" else "1" for b in gamma_bits)
 print(int(gamma_bits, 2) * int(epsilon_bits, 2))
 
-from typing import Sequence, Callable
+from collections.abc import Sequence, Callable
 def find_rating(criteria: Callable[[str], str], bitstrings: Sequence[str], index: int = 0) -> int:
     if len(bitstrings) <= 1:
         return int(bitstrings[0], 2)

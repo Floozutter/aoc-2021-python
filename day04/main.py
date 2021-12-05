@@ -4,7 +4,8 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 header, *bodies = raw.strip().split("\n\n")
 
-from typing import NamedTuple, Iterable, Optional, cast
+from typing import NamedTuple, cast
+from collections.abc import Iterable
 class Win(NamedTuple):
     turn: int
     score: int
@@ -23,7 +24,7 @@ class Board:
             if not a:
                 return True
         return False
-    def play(self, draws: Iterable[int]) -> Optional[Win]:
+    def play(self, draws: Iterable[int]) -> Win | None:
         for i, n in enumerate(draws):
             if self.mark(n):
                 return Win(i + 1, sum(self.unmarked) * n)
