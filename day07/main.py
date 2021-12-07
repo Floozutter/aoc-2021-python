@@ -2,17 +2,14 @@ INPUTPATH = "input.txt"
 #INPUTPATH = "input-test.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
-ps = tuple(map(int, raw.strip().split(",")))
-from statistics import median
-m = int(median(ps))
-print(sum(abs(m - p) for p in ps))
+xs = tuple(map(int, raw.strip().split(",")))
 
-lowest = None
-for i in range(min(ps), max(ps) + 1):
-    cost = sum(
-        sum(i+1 for i in range(abs(i - p)))
-        for p in ps
-    )
-    if lowest is None or cost < lowest:
-        lowest = cost
-print(lowest)
+from statistics import median_low
+m = median_low(xs)
+print(sum(abs(m - x) for x in xs))
+
+t = lambda n: n*(n+1)//2
+print(min(
+    sum(t(abs(i - x)) for x in xs)
+    for i in range(min(xs), max(xs) + 1)
+))
