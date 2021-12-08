@@ -2,13 +2,14 @@ INPUTPATH = "input.txt"
 #INPUTPATH = "input-test.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
-inputs, outputs = zip(*(
-    tuple(
-        tuple(map(frozenset, half.strip().split()))
-        for half in line.split("|")
+lines = (
+    (
+        tuple(frozenset(digit) for digit in value.strip().split())
+        for value in line.split("|")
     )
-    for line in raw.strip().split("\n"))
+    for line in raw.strip().split("\n")
 )
+inputs, outputs = zip(*lines)
 
 print(sum(
     1
@@ -17,83 +18,50 @@ print(sum(
     if len(digit) in {2, 4, 3, 7}
 ))
 
-from typing import NamedTuple
-from collections.abc import Set
-class InvolvedSegments(NamedTuple):
-    definitely: frozenset[str]
-    impossible: frozenset[str]
-    @classmethod
-    def from_size(cls, size: int):
-        c = lambda a, b: cls(frozenset(a), frozenset(b))
-        match size:
-            case 2:
-                return c("cf", "abdeg")
-            case 3:
-                return c("acf", "bdeg")
-            case 4:
-                return c("bcdf", "aeg")
-            case 5:
-                return c("adg", "")
-            case 6:
-                return c("abfg", "")
-            case 7:
-                return c("abcdefg", "")
-            case _:
-                raise ValueError("impossible number of segments")
-
-def digit_from_segments(segments: Set[str]) -> int:
-    match "".join(sorted(segments)):
-        case "abcefg":
-            return 0
-        case "cf":
-            return 1
-        case "acdeg":
-            return 2
-        case "acdfg":
-            return 3
-        case "bcdf":
-            return 4
-        case "abdfg":
-            return 5
-        case "abdefg":
-            return 6
-        case "acf":
-            return 7
-        case "abcdefg":
-            return 8
-        case "abcdfg":
-            return 9
-        case _:
-            raise ValueError("invalid digit")
-
-from itertools import chain
-from collections.abc import Sequence
-def decode(i: Sequence[Set[str]], o: Sequence[Set[str]]) -> int:
-    mapping = {c: set("abcdefg") for c in "abcdefg"}
-    for digit in chain(i, o):
-        involved = InvolvedSegments.from_size(len(digit))
-        for s in involved.definitely:
-            mapping[s].intersection_update(digit)
-        for s in involved.impossible:
-            mapping[s].difference_update(digit)
-    while any(len(choices) > 1 for choices in mapping.values()):
-        if any(not choices for choices in mapping.values()):
-            raise ValueError("impossible mapping of segments")
-        solved = frozenset(
+segments_to_digit = {
+    frozenset("abcefg") : 0,
+    frozenset("cf")     : 1,
+    frozenset("acdeg")  : 2,
+    frozenset("acdfg")  : 3,
+    frozenset("bcdf")   : 4,
+    frozenset("abdfg")  : 5,
+    frozenset("abdefg") : 6,
+    frozenset("acf")    : 7,
+    frozenset("abcdefg"): 8,
+    frozenset("abcdfg") : 9,
+}
+from collections.abc import Iterable, Mapping, Set
+def solve_decoder(encoded_digits: Iterable[Set[str]]) -> Mapping[str, str]:
+    # initialize unsolved encoder (mapping of unencoded segments to sets of possible encodings)
+    encoder = {segment: set("abcdefg") for segment in "abcdefg"}
+    # use number of segments in each encoded digit to partially solve encoder
+    for encoded_digit in encoded_digits:
+        n = len(encoded_digit)
+        possible_digits = tuple(s for s in segments_to_digit.keys() if len(s) == n)
+        # involved segments must encode to a segment in the encoded digit
+        for involved in (s for s in "abcdefg" if all(s in d for d in possible_digits)):
+            encoder[involved].intersection_update(encoded_digit)
+        # uninvolved segments cannot encode to a segment in the encoded digit
+        for uninvolved in (s for s in "abcdefg" if all(s not in d for d in possible_digits)):
+            encoder[uninvolved].difference_update(encoded_digit)
+    # filter out known mappings from each set of choices until solved
+    while any(len(choices) > 1 for choices in encoder.values()):
+        solved_choices = frozenset(
             next(iter(choices))
-            for choices in mapping.values()
+            for choices in encoder.values()
             if len(choices) == 1
         )
-        for choices in mapping.values():
+        for choices in encoder.values():
             if len(choices) > 1:
-                choices.difference_update(solved)
-    actual_mapping = {next(iter(v)): k for k, v in mapping.items()}
+                choices.difference_update(solved_choices)
+    # invert encoder for decoder
+    return {next(iter(e)): d for d, e in encoder.items()}
+def decode_digits(decoder: Mapping[str, str], digits: Iterable[Set[str]]) -> int:
     return int("".join(
-        str(digit_from_segments(
-            actual_mapping[s]
-            for s in encoded
-        ))
-        for encoded in o
+        str(segments_to_digit[frozenset(decoder[e] for e in encoded_segments)])
+        for encoded_segments in digits
     ))
-
-print(sum(decode(i, o) for i, o in zip(inputs, outputs)))
+print(sum(
+    decode_digits(solve_decoder(i + o), o)
+    for i, o in zip(inputs, outputs)
+))
