@@ -4,8 +4,8 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 xs = tuple(map(int, raw.strip().split(",")))
 
-from statistics import median_low
-m = median_low(xs)
+from statistics import median
+m = int(median(xs))
 print(sum(abs(m - x) for x in xs))
 
 t = lambda n: n*(n+1)//2
