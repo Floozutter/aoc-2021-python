@@ -4,58 +4,33 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 lines = tuple(raw.strip().split())
 
-brackets = {
-    "(": ")",
-    "[": "]",
-    "{": "}",
-    "<": ">",
-}
-points = {
-    ")": 3,
-    "]": 57,
-    "}": 1197,
-    ">": 25137,
-}
+brackets = {"(": ")", "[": "]", "{": "}", "<": ">"}
+points_corrupted = {")": 3, "]": 57, "}": 1197, ">": 25137}
+points_incomplete = {")": 1, "]": 2, "}": 3, ">": 4}
 
-corrupted = []
-for l in lines:
-    stack = []
-    for c in l:
-        if c in brackets:
-            stack.append(c)
-        else:
-            if not stack or c != brackets[stack[-1]]:
-                corrupted.append(c)
-                break
-            else:
-                stack.pop()
-print(sum(points[c] for c in corrupted))
+from typing import NamedTuple
+class Corrupted(NamedTuple): score: int
+class Incomplete(NamedTuple): score: int
 
-def score(l):
-    stack = []
-    for c in l:
-        if c in brackets:
-            stack.append(c)
+from functools import reduce
+def score(line: str) -> Corrupted | Incomplete | None:
+    openers = []
+    for b in line:
+        if b in brackets:
+            openers.append(b)
+        elif not openers or b != brackets[openers[-1]]:
+            return Corrupted(points_corrupted[b])
         else:
-            if not stack or c != brackets[stack[-1]]:
-                return 0
-            else:
-                stack.pop()
-    x = "".join(brackets[c] for c in reversed(stack))
-    t = 0
-    for c in x:
-        t *= 5
-        if c == ")":
-            t += 1
-        elif c == "]":
-            t += 2
-        elif c == "}":
-            t += 3
-        else:
-            t += 4
-    return t
-scores = []
-for l in lines:
-    scores.append(score(l))
-from statistics import median
-print(int(median(s for s in scores if s)))
+            openers.pop()
+    if openers:
+        return Incomplete(reduce(
+            lambda total, closer: 5*total + points_incomplete[closer],
+            (brackets[o] for o in reversed(openers)),
+            0
+        ))
+    return None
+
+scores = tuple(map(score, lines))
+print(sum(c.score for c in scores if isinstance(c, Corrupted)))
+from statistics import median_low
+print(median_low(i.score for i in scores if isinstance(i, Incomplete)))
