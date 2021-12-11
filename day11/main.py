@@ -2,43 +2,27 @@ INPUTPATH = "input.txt"
 #INPUTPATH = "input-test.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
-ini = tuple(map(int, raw.strip().split()))
-d = {
-    (i, j): int(n)
-    for i, row in enumerate(raw.strip().split())
-    for j, n in enumerate(row)
-}
+octopi = {(i, j): int(n) for i, row in enumerate(raw.strip().split()) for j, n in enumerate(row)}
 
-def step() -> int:
-    for k in d:
-        d[k] += 1
-    flashed = set()
-    while True:
-        flashes = set((i, j) for i in range(10) for j in range(10) if d[i, j] > 9)
-        if not flashes:
-            return len(flashed)
-        flashed.update(flashes)
-        for i, j in flashes:
-            for di in (-1, 0, 1):
-                for dj in (-1, 0, 1):
-                    if (i+di, j+dj) in d:
-                        d[i+di, j+dj] += 1
-        for f in flashed:
-            d[f] = 0
+from collections import Counter
+def step(octopi: dict[tuple[int, int], int]) -> int:
+    octopi.update({p: e+1 for p, e in octopi.items()})
+    tired = set()
+    while flashes := set(p for p, e in octopi.items() if e > 9):
+        tired.update(flashes)
+        octopi.update({p: 0 for p in flashes})
+        adjacents = ((i+di, j+dj) for i, j in flashes for di in (-1, 0, 1) for dj in (-1, 0, 1))
+        increases = Counter(adjacents).items()
+        octopi.update({p: octopi[p]+i for p, i in increases if p in octopi and p not in tired})
+    return len(tired)
 
 count = 0
 for i in range(100):
-    count += step()
+    count += step(octopi)
 print(count)
 
-d = {
-    (i, j): int(n)
-    for i, row in enumerate(raw.strip().split())
-    for j, n in enumerate(row)
-}
-for i in range(1_000_000):
-    x = step()
-    #print(x)
-    if x == 100:
-        print(i+1)
+while True:
+    i += 1
+    if step(octopi) >= 100:
         break
+print(i + 1)
