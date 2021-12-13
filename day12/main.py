@@ -10,7 +10,8 @@ for a, b in (line.split("-") for line in raw.strip().split("\n")):
 
 from functools import cache
 @cache
-def paths_to_end(cave: str, visited: frozenset[int], allow_one_repeat: bool) -> int:
+def paths_to_end(cave: str, prior_visited: frozenset[int], allow_one_repeat: bool) -> int:
+    visited = prior_visited | {cave}
     if cave == "end":
         return 1
     n = 0
@@ -20,7 +21,7 @@ def paths_to_end(cave: str, visited: frozenset[int], allow_one_repeat: bool) -> 
         elif adjacent[0].isupper():
             n += paths_to_end(adjacent, visited, allow_one_repeat)
         elif adjacent not in visited:
-            n += paths_to_end(adjacent, visited | {adjacent}, allow_one_repeat)
+            n += paths_to_end(adjacent, visited, allow_one_repeat)
         elif allow_one_repeat:
             n += paths_to_end(adjacent, visited, False)
     return n
