@@ -4,43 +4,36 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 body, footer = raw.strip().split("\n\n")
 
-initial = frozenset(
-    tuple(map(int, line.split(",")))
+from typing import NamedTuple
+class Dot(NamedTuple): x: int; y: int
+class Line(NamedTuple): axis: str; value: int
+
+initial: frozenset[Dot] = frozenset(
+    Dot(*map(int, line.split(",")))
     for line in body.strip().split()
 )
+lines: tuple[Line, ...] = tuple(
+    Line(l[-1], int(r))
+    for l, r in (line.split("=") for line in footer.strip().split("\n"))
+)
 
-from typing import NamedTuple
-class Fold(NamedTuple):
-    coord: str
-    value: int
-    @classmethod
-    def from_line(cls, line: str):
-        l, r = line.split("=")
-        return cls(l[-1], int(r))
-folds = tuple(map(Fold.from_line, footer.strip().split("\n")))
+def fold(dots: frozenset[Dot], line: Line) -> frozenset[Dot]:
+    return frozenset(
+        Dot(line.value - abs(d.x - line.value), d.y) if line.axis == "x" else
+        Dot(d.x, line.value - abs(d.y - line.value))
+        for d in dots
+    )
 
-def apply_fold(dots: frozenset[tuple[int, int]], fold: Fold) -> frozenset[tuple[int, int]]:
-    new = set()
-    for x, y in dots:
-        if fold.coord == "y":
-            if y >= fold.value:
-                new.add((x, fold.value - (y - fold.value)))
-            else:
-                new.add((x, y))
-        elif fold.coord == "x":
-            if x >= fold.value:
-                new.add((fold.value - (x - fold.value), y))
-            else:
-                new.add((x, y))
-    return frozenset(new)
+dots = fold(initial, lines[0])
+print(len(dots))
 
-dots = frozenset(initial)
-for fold in folds:
-    dots = apply_fold(dots, fold)
-
-for i in range(50, -10, -1):
-    for j in range(-10, 10):
-        print("#" if (i, j) in dots else ".", end="")
-    print()
-
-print(len(apply_fold(initial, folds[0])))
+from functools import reduce
+dots = reduce(fold, lines[1:], dots)
+xs, ys = zip(*dots)
+print("\n".join(
+    "".join(
+        "#" if (x, y) in dots else " "
+        for x in range(min(xs), max(xs)+1)
+    )
+    for y in range(min(ys), max(ys)+1)
+))
