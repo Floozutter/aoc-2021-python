@@ -3,7 +3,7 @@ INPUTPATH = "input.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
 template, body = raw.strip().split("\n\n")
-rules = {l: r for l, r in (line.split(" -> ") for line in body.strip().split("\n"))}
+rules = dict(line.split(" -> ") for line in body.strip().split("\n"))
 
 from collections import Counter
 def step(elements: Counter[str], pairs: Counter[str]) -> tuple[Counter[str], Counter[str]]:
