@@ -6,9 +6,9 @@ risks = tuple(tuple(map(int, row)) for row in raw.strip().split())
 cavern1 = {(i, j): risk for i, row in enumerate(risks) for j, risk in enumerate(row)}
 h, w = len(risks), len(risks[0])
 cavern2 = {
-    (i, j): ((risks[i%h][j%w] + (i//h) + (j//h)) - 1) % 9 + 1
-    for i in range(5 * len(risks))
-    for j in range(5 * len(risks[0]))
+    (i, j): ((risks[i%h][j%w] + (i//h) + (j//w)) - 1) % 9 + 1
+    for i in range(5 * h)
+    for j in range(5 * w)
 }
 
 import heapq
