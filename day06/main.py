@@ -9,7 +9,7 @@ from functools import cache
 def total_fish(timer: int, days: int) -> int:
     if days <= 0:
         return 1
-    elif timer == 0:
+    elif timer <= 0:
         return total_fish(6, days - 1) + total_fish(8, days - 1)
     else:
         return total_fish(timer - 1, days - 1)
