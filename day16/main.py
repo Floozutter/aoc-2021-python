@@ -4,6 +4,10 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 bits = "".join(f"{int(h, 16):04b}" for h in raw.strip())
 
+"""
+to-do: refactor using queue instead of generator
+"""
+
 from typing import Iterator, TypeVar
 T = TypeVar("T")
 def exact_slice(it: Iterator[T], n: int) -> Iterator[T]:
