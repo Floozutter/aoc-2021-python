@@ -5,7 +5,8 @@ with open(INPUTPATH) as ifile:
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass, astuple
-from typing import final, NamedTuple, Sequence, Callable
+from collections.abc import Sequence, Callable
+from typing import final
 
 @dataclass(frozen = True)
 @final
