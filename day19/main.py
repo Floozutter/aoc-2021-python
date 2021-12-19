@@ -19,7 +19,7 @@ class Point:
     def __sub__(self: "Point", other: "Point") -> "Point":
         return Point(self.x - other.x, self.y - other.y, self.z - other.z)
     def l1_distance_to(self: "Point", other: "Point") -> int:
-        return sum(map(abs, astuple(self - other)))
+        return sum(map(abs, astuple(other - self)))
 
 rotations: Sequence[Callable[[Point], Point]] = (
     lambda p: Point(+p.x, +p.y, +p.z),
