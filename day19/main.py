@@ -7,7 +7,7 @@ reports = tuple(
     for report in raw.split("\n\n")
 )
 
-reorientations = (
+rotations = (
     lambda x, y, z: (+x, +y, +z),
     lambda x, y, z: (+x, -y, -z),
     lambda x, y, z: (+x, +z, -y),
@@ -34,27 +34,20 @@ reorientations = (
     lambda x, y, z: (-z, -y, -x),
 )
 
-def diff(a, b):
-    x, y, z = a
-    i, j, k = b
-    return x - i, y - j, z - k
+Point = tuple[int, int, int]
 
-from itertools import combinations, permutations
-from collections import defaultdict
-def f(a, b):
-    transformations = defaultdict(set)
-    for i, r in enumerate(reorientations):
-        for a1, a2 in combinations(a, 2):
-            for bs in combinations(b, 2):
-                for b1, b2 in permutations(bs):
-                    d1 = diff(a1, r(*b1))
-                    d2 = diff(a2, r(*b2))
-                    if d1 == d2:
-                        transformations[i, d1].add((a1, b1))
-                        transformations[i, d2].add((a2, b2))
-    s = max(transformations.values(), key = len)
-    print(len(s))
-    for a, b in s:
-        print(a, b)
-
-f(reports[0], reports[1])
+from collections import Counter
+from operator import add, sub
+def sync_reports(rep_a: tuple[Point, ...], rep_b: tuple[Point, ...]) -> frozenset[Point] | None:
+    syncs = Counter()
+    for i, r in enumerate(rotations):
+        for a in rep_a:
+            for b in rep_b:
+                d = tuple(map(sub, a, r(*b)))
+                syncs[i, d] += 1
+    i, d = max(syncs, key = syncs.get)
+    print(i, d, syncs[i, d])
+    if syncs[i, d] < 12:
+        return None
+    else:
+        return frozenset(rep_a) | frozenset(tuple(map(add, rotations[i](*b), d)) for b in rep_b)
