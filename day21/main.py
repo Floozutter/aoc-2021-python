@@ -4,18 +4,15 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 start1, start2 = (int(line.split()[-1]) for line in raw.strip().split("\n"))
 
-def play_deterministic(start1: int, start2: int) -> int:
-    spaces = [start1, start2]
-    scores = [0, 0]
-    rolls = 0
-    while True:
-        for i in (0, 1):
-            spaces[i] = ((spaces[i]+3*rolls+6) - 1) % 10 + 1
-            scores[i] += spaces[i]
-            rolls += 3
-            if scores[i] >= 1000:
-                return rolls * scores[(i+1) % 2]
-print(play_deterministic(start1, start2))
+def play_deterministic(space1: int, score1: int, space2: int, score2: int, rolls: int) -> int:
+    if score1 >= 1000:
+        return rolls * score2
+    elif score2 >= 1000:
+        return rolls * score1
+    else:
+        now1 = ((space1+3*rolls+6) - 1) % 10 + 1
+        return play_deterministic(space2, score2, now1, score1 + now1, rolls + 3)
+print(play_deterministic(start1, 0, start2, 0, 0))
 
 from functools import cache
 @cache
