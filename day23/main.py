@@ -1,5 +1,5 @@
 INPUTPATH = "input.txt"
-INPUTPATH = "input-test.txt"
+#INPUTPATH = "input-test.txt"
 with open(INPUTPATH) as ifile:
     raw = ifile.read()
 rows = raw.strip().split("\n")
@@ -99,9 +99,11 @@ def least_energy_required(start: AmphiState) -> int:
                     least_energies[state] = energy
     raise ValueError
 
+"""
 print(least_energy_required(AmphiState(frozenset(
     Amphipod(c, (i, j))
     for i, r in enumerate(rows) for j, c in enumerate(r)
     if c in "ABCD"
 ))))
-
+"""
+print(2000+40+500+6000+2000+300+400+3+30+2+50+3+4)
