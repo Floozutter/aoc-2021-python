@@ -4,6 +4,13 @@ with open(INPUTPATH) as ifile:
     raw = ifile.read()
 rows = raw.strip().split("\n")
 
+template = """
+#############
+#...........#
+###.#.#.#.###
+  #.#.#.#.#
+  #########
+"""
 spaces = frozenset((i, j) for i, r in enumerate(rows) for j, c in enumerate(r) if c in ".ABCD")
 entrances = frozenset(((1, 3), (1, 5), (1, 7), (1, 9)))
 rooms = {
@@ -58,6 +65,10 @@ class AmphiState(NamedTuple):
                 for perm in permutations(amphipods)
             )
         return total
+    def __str__(self) -> str:
+        d={(i,j):c for i,r in enumerate(template.strip("\n").split("\n"))for j,c in enumerate(r)}
+        d.update({a.pos: a.kind for a in self.amphipods})
+        return "\n".join("".join(d.get((i,j)," ") for j in range(13)) for i in range(5))
 
 class Exploration(NamedTuple):
     expected: int
@@ -70,6 +81,7 @@ def least_energy_required(start: AmphiState) -> int:
     while frontier:
         front = heapq.heappop(frontier)
         print(front[:2])
+        print(front.state, end="\n\n")
         if all(a in rooms[a.kind] for a in front.state.amphipods):
             return front.energy
         if front.energy > least_energies[front.state]:
@@ -92,3 +104,4 @@ print(least_energy_required(AmphiState(frozenset(
     for i, r in enumerate(rows) for j, c in enumerate(r)
     if c in "ABCD"
 ))))
+
