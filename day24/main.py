@@ -135,20 +135,20 @@ print(sorted(best))
 
 import random
 
-def search(lower_bound: int) -> tuple[int, int]:
-    best_n = int("9"*14)
-    best_z = run(program, (9,)*14)["z"]
+def search(bound: int, for_lowest: bool) -> tuple[int, int]:
+    best_n = 99999999999999 if not for_lowest else 11111111111111
+    best_z = run(program, tuple(map(int, str(best_n))))["z"]
     tries = 0
-    while tries < 100_000:
-        tries += 1
+    while tries < 50_000:
         digits = list(map(int, str(best_n)))
         for i in random.sample(range(14), random.randint(1, 14)):
             digits[i] = random.randint(1, 9)
         n = int("".join(map(str, digits)))
-        if n <= lower_bound:
+        if (not for_lowest and n <= bound) or (for_lowest and n >= bound):
             continue
+        tries += 1
         z = run(program, digits)["z"]
-        if z < best_z:
+        if best_z is None or z < best_z:
             tries = 0
             best_n = n
             best_z = z
@@ -156,18 +156,27 @@ def search(lower_bound: int) -> tuple[int, int]:
             return best_n, best_z
     return best_n, best_z
 
-best_n: int | None = 79197919993985
-while True:
-    n, z = search(best_n or 0)
-    if z == 0:
-        best_n = n
-        print(f"BEST: {best_n}")
-    else:
-        print(f"BEST: {best_n} | FAIL: {n} ({z})")
+def main(for_lowest: bool) -> None:
+    best_n: int | None = None
+    default_bound = (0 if not for_lowest else 99999999999999)
+    while True:
+        n, z = search(best_n or default_bound, for_lowest)
+        if z == 0:
+            best_n = n
+            print(f"BEST: {best_n}")
+        else:
+            print(f"BEST: {best_n} | FAIL: {n} ({z})")
 
-# refuted: 79197919682652
-# refuted: 79197919771213
-# refuted: 79197919782873
-# refuted: 79197919893654
-# refuted: 79197919993875
-# best:    79197919993985
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("part", type = int)
+    p = parser.parse_args().part
+    if p == 1:
+        main(False)
+    elif p == 2:
+        main(True)
+    else:
+        parser.error("invalid part")
+# refuted: 13191913571321
+# best:    13191913571211
