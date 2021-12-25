@@ -28,53 +28,68 @@ def run(program: Iterable[Instruction], inputs: Iterable[int]) -> dict[str, int]
     return mem
 
 @dataclass(frozen = True)
-class Literal: val: int
+class Expression:
+    def evaluate(self, params: Sequence[int]) -> int:
+        if isinstance(self, Literal):
+            return self.val
+        elif isinstance(self, Parameter):
+            return params[self.idx]
+        else:
+            assert isinstance(self, Operation)
+            op, a, b = self.op, self.a.evaluate(params), self.b.evaluate(params)
+            if   op == "add": return a + b
+            elif op == "mul": return a * b
+            elif op == "div": return int(a / b)
+            elif op == "mod": return a % b
+            elif op == "eql": return a == b
+            else: raise ValueError
+    def print_tree(self, pre: str = "", last: bool = True) -> None:
+        print(f"{pre}{'└' if last else '├'}", end="")
+        if isinstance(self, Literal):
+            print(self.val)
+        elif isinstance(self, Parameter):
+            print(f"p[{self.idx}]")
+        else:
+            assert isinstance(self, Operation)
+            print(self.op)
+            nextpre = pre + (" " if last else "│")
+            self.a.print_tree(nextpre, False)
+            self.b.print_tree(nextpre, True)
 @dataclass(frozen = True)
-class Parameter: idx: int
+class Literal(Expression): val: int
 @dataclass(frozen = True)
-class Operation: op: str; a: "Expression"; b: "Expression"
-Expression = Literal | Parameter | Operation
-
-def evaluate(exp: Expression, params: Sequence[int]) -> int:
-    if isinstance(exp, Literal):
-        return exp.val
-    elif isinstance(exp, Parameter):
-        return params[exp.idx]
-    else:
-        op, a, b = exp.op, evaluate(exp.a, params), evaluate(exp.b, params)
-        if   op == "add": return a + b
-        elif op == "mul": return a * b
-        elif op == "div": return int(a / b)
-        elif op == "mod": return a % b
-        elif op == "eql": return a == b
-        else: raise ValueError
-
-def simplify(o: Operation) -> Expression:
-    op, a, b = o.op, o.a, o.b
-    if isinstance(a, Literal) and isinstance(b, Literal):
-        return Literal(evaluate(Operation(op, a, b), ()))
-    elif op == "add" and a == Literal(0):
-        return b
-    elif op == "add" and b == Literal(0):
-        return a
-    elif op == "mul" and (a == Literal(0) or b == Literal(0)):
-        return Literal(0)
-    elif op == "mul" and a == Literal(1):
-        return b
-    elif op == "mul" and b == Literal(1):
-        return a
-    elif op == "div" and a == Literal(0):
-        return Literal(0)
-    elif op == "div" and b == Literal(1):
-        return a
-    elif op == "div" and a == b:
-        return Literal(1)
-    elif op == "mod" and (a == Literal(0) or b == Literal(1) or a == b):
-        return Literal(0)
-    elif op == "eql" and a == b:
-        return Literal(1)
-    else:
-        return Operation(op, a, b)
+class Parameter(Expression): idx: int
+@dataclass(frozen = True)
+class Operation(Expression):
+    op: str
+    a: "Expression"
+    b: "Expression"
+    def simplify(self) -> Expression:
+        op, a, b = self.op, self.a, self.b
+        if isinstance(a, Literal) and isinstance(b, Literal):
+            return Literal(self.evaluate(()))
+        elif op == "add" and a == Literal(0):
+            return b
+        elif op == "add" and b == Literal(0):
+            return a
+        elif op == "mul" and (a == Literal(0) or b == Literal(0)):
+            return Literal(0)
+        elif op == "mul" and a == Literal(1):
+            return b
+        elif op == "mul" and b == Literal(1):
+            return a
+        elif op == "div" and a == Literal(0):
+            return Literal(0)
+        elif op == "div" and b == Literal(1):
+            return a
+        elif op == "div" and a == b:
+            return Literal(1)
+        elif op == "mod" and (a == Literal(0) or b == Literal(1) or a == b):
+            return Literal(0)
+        elif op == "eql" and a == b:
+            return Literal(1)
+        else:
+            return Operation(op, a, b)
 
 def transform(program: Iterable[Instruction]) -> dict[str, Expression]:
     mem: dict[str, Expression] = {name: Literal(0) for name in "wxyz"}
@@ -85,20 +100,8 @@ def transform(program: Iterable[Instruction]) -> dict[str, Expression]:
         else:
             l = mem[a]
             r = mem[b] if b in mem else Literal(int(cast(str, b)))
-            mem[a] = simplify(Operation(op, l, r))
+            mem[a] = Operation(op, l, r).simplify()
     return mem
-
-def print_tree(exp: Expression, pre: str = "", last: bool = True) -> None:
-    print(f"{pre}{'└' if last else '├'}", end="")
-    if isinstance(exp, Literal):
-        print(exp.val)
-    elif isinstance(exp, Parameter):
-        print(f"p[{exp.idx}]")
-    else:
-        print(exp.op)
-        nextpre = pre + (" " if last else "│")
-        print_tree(exp.a, nextpre, False)
-        print_tree(exp.b, nextpre, True)
 
 program = tuple(Instruction(*line.split()) for line in raw.strip().split("\n"))
 
@@ -110,6 +113,6 @@ print(next(
 """
 
 exp = transform(program)["z"]
-#print_tree(exp)
+#exp.print_tree()
 print(run(program, (9,)*14)["z"])
-print(evaluate(exp, (9,)*14))
+print(exp.evaluate((9,)*14))
