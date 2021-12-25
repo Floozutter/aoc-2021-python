@@ -178,5 +178,3 @@ if __name__ == "__main__":
         main(True)
     else:
         parser.error("invalid part")
-# refuted: 13191913571321
-# best:    13191913571211
