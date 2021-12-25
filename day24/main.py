@@ -112,12 +112,12 @@ print(next(
 ))
 """
 
+"""
 exp = transform(program)["z"]
-#exp.print_tree()
+exp.print_tree()
 print(run(program, (9,)*14)["z"])
-#print(exp.evaluate((9,)*14))
-
-
+print(exp.evaluate((9,)*14))
+"""
 
 """
 import random
@@ -134,27 +134,40 @@ print(sorted(best))
 """
 
 import random
-best_z = run(program, [9]*14)["z"]
-best_digits = [9]*14
-while True:
-    k = random.randint(1, 14)
-    indices = random.sample(range(14), k)
-    digits = best_digits.copy()
-    for i in indices:
-        digits[i] = random.randint(1, 9)
-    if int("".join(map(str, digits))) <= 79197919193676:
-        continue
-    z = run(program, digits)["z"]
-    if z == 0:
-        break
-    if z < best_z:
-        print(best_digits, digits, best_z, z)
-        best_z = z
-        best_digits = digits
-print("".join(map(str, best_digits)))
 
-# not 13191617971545
-# not 79197919182465
-# not 79197919193676
-# consider: 91471914682432 (16)
-# consider: 81471914682432 (15)
+def search(lower_bound: int) -> tuple[int, int]:
+    best_n = int("9"*14)
+    best_z = run(program, (9,)*14)["z"]
+    tries = 0
+    while tries < 100_000:
+        tries += 1
+        digits = list(map(int, str(best_n)))
+        for i in random.sample(range(14), random.randint(1, 14)):
+            digits[i] = random.randint(1, 9)
+        n = int("".join(map(str, digits)))
+        if n <= lower_bound:
+            continue
+        z = run(program, digits)["z"]
+        if z < best_z:
+            tries = 0
+            best_n = n
+            best_z = z
+        if best_z == 0:
+            return best_n, best_z
+    return best_n, best_z
+
+best_n: int | None = 79197919993985
+while True:
+    n, z = search(best_n or 0)
+    if z == 0:
+        best_n = n
+        print(f"BEST: {best_n}")
+    else:
+        print(f"BEST: {best_n} | FAIL: {n} ({z})")
+
+# refuted: 79197919682652
+# refuted: 79197919771213
+# refuted: 79197919782873
+# refuted: 79197919893654
+# refuted: 79197919993875
+# best:    79197919993985
