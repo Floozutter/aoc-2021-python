@@ -115,4 +115,46 @@ print(next(
 exp = transform(program)["z"]
 #exp.print_tree()
 print(run(program, (9,)*14)["z"])
-print(exp.evaluate((9,)*14))
+#print(exp.evaluate((9,)*14))
+
+
+
+"""
+import random
+import heapq
+best = [(-run(program, (9,)*14)["z"], (9,)*14)]*10
+for _ in range(100_000):
+    digits = tuple(random.randint(1, 9) for _ in range(14))
+    z = run(program, digits)["z"]
+    heapq.heappushpop(best, (-z, digits))
+    print(digits, z)
+    if z == 0:
+        break
+print(sorted(best))
+"""
+
+import random
+best_z = run(program, [9]*14)["z"]
+best_digits = [9]*14
+while True:
+    k = random.randint(1, 14)
+    indices = random.sample(range(14), k)
+    digits = best_digits.copy()
+    for i in indices:
+        digits[i] = random.randint(1, 9)
+    if int("".join(map(str, digits))) <= 79197919193676:
+        continue
+    z = run(program, digits)["z"]
+    if z == 0:
+        break
+    if z < best_z:
+        print(best_digits, digits, best_z, z)
+        best_z = z
+        best_digits = digits
+print("".join(map(str, best_digits)))
+
+# not 13191617971545
+# not 79197919182465
+# not 79197919193676
+# consider: 91471914682432 (16)
+# consider: 81471914682432 (15)
